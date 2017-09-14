@@ -13,20 +13,26 @@ import java.net.Socket;
  */
 public class Server {
 
-	private final Socket socket;
+	private Socket socket;
 	
 	public Server(Socket socket) {
 		this.socket = socket;
 	}
 	
+//	public Server(Socket2 socket) {
+//		this.socket = socket;
+//	}
+
+	
 	public void start() throws IOException {
 		PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true);
-		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 		String ask = null;
 		do {
-			System.out.println("wait command ...");
+			System.out.print("wait command ... ");
 			ask = in.readLine();
 			System.out.println(ask);
+			if (ask == null) break;
 			if ("Hello oracle".equals(ask)) {
 				out.println("Hello, dear friend, I'm a oracle.");
 				out.println();
@@ -35,13 +41,33 @@ public class Server {
 				out.println();
 			}
 		} while ( ! "exit".equals(ask));
+		System.out.println("\n<Exited>");
 	}
 	
+	@SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {
+		run(new ServerSocket(1111).accept());
+	}
+	
+	public static void run() throws IOException {
 		try (@SuppressWarnings("resource") /* try-with-resources statement automatically call socket.close() */
-		final Socket socket = new ServerSocket(1111).accept();) {
-			new Server(socket);
+				final Socket socket =  new ServerSocket(1111).accept() ) {
+			new Server(socket).start();
 		}
 	}
 	
+	public static void run(final Socket socket) throws IOException {
+		try {
+			new Server(socket).start();
+		} finally {
+			socket.close();
+		}
+	}
+	
+	public static void run2() throws IOException {
+		try (@SuppressWarnings("resource") /* try-with-resources statement automatically call socket.close() */
+		final Socket2 socket = new Socket2(1111).accept();) {
+			System.out.println("Working ...");
+		}
+	}
 }
