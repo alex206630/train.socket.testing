@@ -1,4 +1,4 @@
-package socket.testing;
+package socketTesting;
 
 import java.io.BufferedReader;
 import java.io.IOException;
