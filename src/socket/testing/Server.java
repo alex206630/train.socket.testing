@@ -13,15 +13,14 @@ import java.net.Socket;
  */
 public class Server {
 
-	private final int port;
+	private final Socket socket;
 	
-	public Server(int port) throws IOException {
-		this.port = port;
+	public Server(Socket socket) {
+		this.socket = socket;
 	}
 	
 	public void start() throws IOException {
-		Socket socket = new ServerSocket(port).accept();
-		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+		PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true);
 		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		String ask = null;
 		do {
@@ -36,11 +35,13 @@ public class Server {
 				out.println();
 			}
 		} while ( ! "exit".equals(ask));
-		
-		socket.close();
 	}
 	
 	public static void main(String[] args) throws IOException {
-		new Server(1111);
+		try (@SuppressWarnings("resource") /* try-with-resources statement automatically call socket.close() */
+		final Socket socket = new ServerSocket(1111).accept();) {
+			new Server(socket);
+		}
 	}
+	
 }
