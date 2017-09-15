@@ -12,6 +12,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.hamcrest.core.Is.is;
+
+import com.google.common.base.Joiner;
 import org.junit.Test;
 
 public class ServerTest {
@@ -53,15 +55,27 @@ public class ServerTest {
 	public void whenAskHelloThenBackGreatOracle() throws IOException {
 		Socket socket = mock(Socket.class);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		StringBuilder inMessage = new StringBuilder();
-		inMessage.append(String.format("Hello oracle%s", LN));
-		inMessage.append(String.format("exit%s", "\r"));
-		ByteArrayInputStream in = new ByteArrayInputStream(inMessage.toString().getBytes());
+
+		/* variant using StringBuilder */
+//		StringBuilder inMessage = new StringBuilder();
+//		inMessage.append(String.format("Hello oracle%s", LN));
+//		inMessage.append(String.format("exit%s", "\r"));
+//		ByteArrayInputStream in = new ByteArrayInputStream(inMessage.toString().getBytes());
+
+		/* variant using String.format */
 //		ByteArrayInputStream in = new ByteArrayInputStream(
 //				String.format(
 //						"Hello oracle%s",
 //						"\r"
 //				).getBytes());
+
+		/* variant using guava */
+		ByteArrayInputStream in = new ByteArrayInputStream(
+				Joiner.on(LN).join(
+						"Hello oracle",
+						"exit"
+				).getBytes()
+		);
 		when(socket.getInputStream()).thenReturn(in);
 		when(socket.getOutputStream()).thenReturn(out);
 		Server server = new Server(socket);
@@ -72,7 +86,43 @@ public class ServerTest {
 						String.format("Hello, dear friend, I'm a oracle.%s%s", LN, LN)
 				)
 		);
-		System.out.println("-done-");
+	}
+
+	@Test
+	public void whenAskUnsuportedMessage() throws IOException {
+		Socket socket = mock(Socket.class);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+		/* variant using StringBuilder */
+//		StringBuilder inMessage = new StringBuilder();
+//		inMessage.append(String.format("Hello oracle%s", LN));
+//		inMessage.append(String.format("exit%s", "\r"));
+//		ByteArrayInputStream in = new ByteArrayInputStream(inMessage.toString().getBytes());
+
+		/* variant using String.format */
+//		ByteArrayInputStream in = new ByteArrayInputStream(
+//				String.format(
+//						"Hello oracle%s",
+//						"\r"
+//				).getBytes());
+
+		/* variant using guava */
+		ByteArrayInputStream in = new ByteArrayInputStream(
+				Joiner.on(LN).join(
+						"unsupported ask",
+						"exit"
+				).getBytes()
+		);
+		when(socket.getInputStream()).thenReturn(in);
+		when(socket.getOutputStream()).thenReturn(out);
+		Server server = new Server(socket);
+		server.start();
+//		Server.run(socket);
+		assertThat(out.toString(),
+				is(
+						String.format("I don't understand%s%s", LN, LN)
+				)
+		);
 	}
 
 }
